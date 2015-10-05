@@ -1,13 +1,22 @@
 #!/usr/bin/env php
 <?php
 
-require(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/vendor/autoload.php');
 
 // fcgi doesn't have STDIN and STDOUT defined by default
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
 defined('STDOUT') or define('STDOUT', fopen('php://stdout', 'w'));
 
-$env = new \janisto\environment\Environment(__DIR__ . '/config');
+// getting SERVER argv vars and remove '--env=' argument
+$env = 'dev';
+foreach ($_SERVER['argv'] as $key => $arg) {
+    if (strstr($arg, '--env=')) {
+        $env = str_replace('--env=', '', $arg);
+        unset($_SERVER['argv'][$key]);
+    }
+}
+
+$env = new \janisto\environment\Environment(__DIR__ . '/config', $env);
 $env->setup();
 $exitCode = (new yii\console\Application($env->console))->run();
 exit($exitCode);
