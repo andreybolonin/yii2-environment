@@ -34,7 +34,7 @@ to the require section of your application's `composer.json` file.
 <?php
 require(dirname(__DIR__) . '/vendor/autoload.php');
 
-$env = new \janisto\environment\Environment(dirname(__DIR__) . '/config');
+$env = new \janisto\environment\Environment(dirname(__DIR__) . '/config', 'dev');
 $env->setup();
 (new yii\web\Application($env->web))->run();
 ```
@@ -48,7 +48,7 @@ require(dirname(__DIR__) . '/vendor/autoload.php');
 $env = new \janisto\environment\Environment([
     dirname(__DIR__) . '/common/config',
     dirname(__DIR__) . '/backend/config'
-]);
+], 'dev');
 $env->setup();
 (new yii\web\Application($env->web))->run();
 ```
@@ -65,7 +65,16 @@ require(__DIR__ . '/vendor/autoload.php');
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
 defined('STDOUT') or define('STDOUT', fopen('php://stdout', 'w'));
 
-$env = new \janisto\environment\Environment(__DIR__ . '/config');
+// getting SERVER argv vars and remove '--env=' argument
+$env = 'dev';
+foreach ($_SERVER['argv'] as $key => $arg) {
+    if (strstr($arg, '--env=')) {
+        $env = str_replace('--env=', '', $arg);
+        unset($_SERVER['argv'][$key]);
+    }
+}
+
+$env = new \janisto\environment\Environment(__DIR__ . '/config', $env);
 $env->setup();
 $exitCode = (new yii\console\Application($env->console))->run();
 exit($exitCode);
@@ -74,7 +83,7 @@ exit($exitCode);
 Use yii
 
 ```
-export YII_ENV='dev' && ./yii
+php yii help --env=dev
 ```
 
 ## Documentation
